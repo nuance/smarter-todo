@@ -253,6 +253,7 @@ ar,   archive                         Move done items to done.txt
 da,   doall NUMBER [NUMBER]...        Mark all items NUMBER as done
  y,   today [TERM...]                 Display tasks done today with TERM
  w,   week [TERM...]                  Display tasks in last 7 days with TERM
+ s,   sync                            Synchronize todo dir with svn
 
 Options:
  -p,  -nc       : Turns off colors
@@ -857,6 +858,13 @@ def listDays(days=1):
         now -= 86400
     list(args, escape=False, listDone=True, matchAny=True, dates=when)
 
+def runSvn():
+    currdir = os.getcwd()
+    os.chdir(TODO_DIR)
+    os.system("svn up")
+    os.system("svn ci -m \"Auto check-in\"")
+    os.chdir(currdir)
+
 def listItemNo(items):
     """List items by number"""
     tasks = getTaskDict()
@@ -1040,6 +1048,8 @@ if __name__ == "__main__":
         listDays(1)
     elif (action == "week" or action == "w"):
         listDays(7)
+    elif (action == "s" or action == "sync"):
+        runSvn()
     elif (action in ["birdseye", "b", "bird", "summarize", "overview"]):
         birdseye()
     elif (action in ["lsr", "listproj", "projects"]):

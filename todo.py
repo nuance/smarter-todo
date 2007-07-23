@@ -256,8 +256,9 @@ ar,   archive                         Move done items to done.txt
 da,   doall NUMBER [NUMBER]...        Mark all items NUMBER as done
  y,   today [TERM...]                 Display tasks done today with TERM
  w,   week [TERM...]                  Display tasks in last 7 days with TERM
-      snippet [TERM...]               Display tasks completed last week
- s,   sync                            Synchronize todo dir with svn
+ s,   snippet [TERM...]               Display tasks completed last week
+ c,   current [TERM...]               Display tasks completed this week
+      sync                            Synchronize todo dir with svn
 
 Options:
  -p,  -nc       : Turns off colors
@@ -873,6 +874,15 @@ def listSnippets():
         now -= 86400
     list(args, escape=False, listDone=True, matchAny=True, dates=when)
 
+def listCurrentSnippets():
+    now = time.time()
+    dayofweek = time.localtime()[6] + 1
+    when = []
+    for day in xrange(dayofweek):
+        when.append(time.strftime("%Y-%m-%d", time.localtime(now)))
+        now -= 86400
+    list(args, escape=False, listDone=True, matchAny=True, dates=when)
+
 def runSvn():
     currdir = os.getcwd()
     os.chdir(TODO_DIR)
@@ -1063,9 +1073,11 @@ if __name__ == "__main__":
         listDays(1)
     elif (action == "week" or action == "w"):
         listDays(7)
-    elif (action == "snippet"):
+    elif (action == "s" or action == "snippet"):
         listSnippets()
-    elif (action == "s" or action == "sync"):
+    elif (action == "c" or action == "current"):
+        listCurrentSnippets()
+    elif (action == "sync"):
         runSvn()
     elif (action in ["birdseye", "b", "bird", "summarize", "overview"]):
         birdseye()

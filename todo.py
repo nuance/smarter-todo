@@ -777,7 +777,7 @@ def report():
     f.write(string + os.linesep)
     f.close()
 
-def birdseye():
+def birdseye(args=[]):
     try:
         import birdseye
     except ImportError:
@@ -785,7 +785,11 @@ def birdseye():
         print "http://todotxt.googlecode.com/svn/trunk/birdseye.py"
         sys.exit()
     archive()
-    birdseye.main([TODO_FILE, DONE_FILE])
+    if len(args) != 0:
+        args = [TODO_FILE, DONE_FILE, args[0]]
+    else:
+        args = [TODO_FILE, DONE_FILE]
+    birdseye.main(args)
 
 def alphaSort(a, b):
     """sorting function to sort tasks alphabetically"""
@@ -1080,7 +1084,10 @@ if __name__ == "__main__":
     elif (action == "sync"):
         runSvn()
     elif (action in ["birdseye", "b", "bird", "summarize", "overview"]):
-        birdseye()
+        if (len(args) > 0):
+            birdseye(args)
+        else:
+            birdseye()
     elif (action in ["lsr", "listproj", "projects"]):
         projects, contexts = listKeywords()
         displaySummary(projects, name="Projects", listDone=False, type=displayType)

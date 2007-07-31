@@ -105,10 +105,15 @@ def separator(c):
 
 
 def main(argv):
+	filt = None
+
 	# make sure you have all your args
 	if len(argv) < 2:
 		usage()
 		sys.exit(2)
+
+	if len(argv) == 3:
+		filt = argv[2]
 
 	# process todo.txt
 	try:
@@ -118,6 +123,9 @@ def main(argv):
 		projectPriority = []
 		contextPriority = []
 		for line in f:
+			if filt is not None and filt not in line:
+				continue
+
 			prioritized = False
 			words = line.split()
 			if words[0][0:1] == ("("):
@@ -148,6 +156,8 @@ def main(argv):
 		completedTasks = {}
 		f = open (argv[1], "r")
 		for line in f:
+			if filt is not None and filt not in line:
+				continue
 			words = line.split()
 			for word in words:
 				if word[0:2] == "p:" or word[0:2] == "p-" or word[0:1] == "+":

@@ -372,11 +372,11 @@ def getFilterDict():
     except (IOError, os.error), why:
         return {}
 
-def writeDict(dict, file, backup):
+def writeDict(dict, file, backup_file):
     """a utility method to write a dictionary of tasks to the TODO file"""
     keys = dict.keys()
     keys.sort()
-    backup(file, backup)
+    backup(file, backup_file)
     f = open(file, "w")
     for key in keys:
         f.write(dict[key] + os.linesep)
@@ -555,10 +555,8 @@ def list(patterns=None, escape=True, \
             new += 1
             tasks[new] = done[i+1]
     
-    if patterns is None:
-        patterns = getCurrentFilter()
-    else:
-        patterns.extend(getCurrentFilter())
+    if getCurrentFilter() != []:
+        tasks = findPatterns(tasks, getCurrentFilter(), escape=escape, matchAny=True, remove=False)
     
     if patterns:
         tasks = findPatterns(tasks, patterns, escape=escape, matchAny=matchAny, remove=remove)

@@ -40,7 +40,7 @@ force = False
 
 # should we wait for the editor to finish - or return to the shell now
 # use waitEditor = True for console editors vim|vi|emacs|joe etc
-# use False for notepad.exe|gedit|kedit 
+# use False for notepad.exe|gedit|kedit
 waitEditor = True
 
 # set your sort preferences
@@ -118,7 +118,7 @@ def help(longmessage = False):
     if longmessage:
         print __doc__
         text = "  Usage: " + sys.argv[0] + """ [options] [ACTION] [PARAM...]
-
+  
   Actions:
     add [PRIORITY] "p:project @context THING I NEED TO DO"
     a   [PRIORITY] "p:project @context THING I NEED TO DO"
@@ -127,90 +127,90 @@ def help(longmessage = False):
       Quotes optional except when text includes any of !#()$&*\|;<>`~
       Optional priority can be added with [a], {a} or "(a)"
       PRIORITY must be a letter between A and Z, case insensitive.
-
+    
     done "THING I HAVE DONE p:project @context"
       Add DONE ITEM to your done.txt.
       Project and context notation optional
       Quotes optional.
-
+    
     append NUMBER "TEXT TO APPEND"
       Adds TEXT TO APPEND to the end of the todo on line NUMBER.
       Quotes optional.
-
+    
     prepend NUMBER "TEXT TO PREPEND"
     prep    NUMBER "TEXT TO PREPEND"
        Adds TEXT TO PREPEND to the beginning of the todo on line NUMBER.
        Quotes optional.
-
+    
     archive
       Moves done items from todo.txt to done.txt.
-
+    
     del NUMBER
     rm  NUMBER
       Deletes the item on line NUMBER in todo.txt.
-
+    
     do NUMBER
     do NUMBER "TEXT TO ADD AS COMMENT"
       Marks item on line NUMBER as done in todo.txt.
       Optional comment can be added to end of todo appears as " # comment"
-
+    
     doall NUMBER [NUMBER]...
     doa NUMBER [NUMBER]...
     da NUMBER [NUMBER]...
       Marks all items on lines NUMBER... as done in todo.txt.
-
+    
     list [TERM] [[TERM]...]
     ls   [TERM] [[TERM]...]
       Displays all todo's that contain TERM(s) sorted by priority with line
       numbers.  If no TERM specified, lists entire todo.txt.
-
+    
     listall [TERM...]
     lsa     [TERM...]
        Displays all the lines in todo.txt AND done.txt that contain TERM(s)
        sorted by priority with line  numbers.  If no TERM specified, lists
        entire todo.txt AND done.txt concatenated and sorted.
-
+    
     lspri [PRIORITY]
     lsp   [PRIORITY]
       Displays all items prioritized PRIORITY.
       If no PRIORITY specified, lists all prioritized items.
-
+    
     pri NUMBER PRIORITY
       Adds PRIORITY to todo on line NUMBER.  If the item is already
       prioritized, replaces current priority with new PRIORITY.
       PRIORITY must be a letter between A and Z.
-
+    
     today [TERM...]
       Print tasks completed today that contain TERM
-
+    
     week [TERM...]
       print tasks completed in the last 7 days that contain TERM
-
+    
     snippet [TERM...]
       print tasks completed last week
-
+    
     edit
     e
       Opens your todo.txt file with $EDITOR or /etc/alternatives/editor.
-
+    
     edone
     ed
       Opens your done.txt file with $EDITOR or /etc/alternatives/editor.
-
+    
     replace NUMBER "UPDATED TODO"
       Replaces todo on line NUMBER with UPDATED TODO.
-
+    
     remdup
       Removes exact duplicate lines from todo.txt.
-
+    
     report
       Adds the number of open todo's and closed done's to report.txt.
-
+    
     birdseye
     b
       Birdseye View Report. To use this, get birdseye.py from
       http://todotxt.googlecode.com/svn/trunk/birdseye.py
-
+  
   Options:
     -nc, -p        : Turns off colors
     -V, --version  : prints version number
@@ -219,7 +219,7 @@ def help(longmessage = False):
     -t, --theme    : color theme ANSI: light|dark|nocolor, Win: windark
     --todo-dir     : Specifiy full path to directory containing todo.txt etc
     -i             : Make sort case sensitive
-
+  
   More on the todo.txt manager at
   http://todotxt.com
   Version """ + __version__ + " " + __revision__[1:-1] + """
@@ -227,12 +227,12 @@ def help(longmessage = False):
   Copyleft 2006, Shane Koster (shane.koster@gmail.com)
 """
     else:
-
+        
         text = "todo.txt manager " + __version__ + " " + __revision__[1:-1] + """
 Copyleft 2006  Gina Trapani, Shane Koster
 
 Usage: todo.py [options] [ACTION] [PARAM...]
-
+ 
  a,   add "TODO p:project @context"   Add TODO to your todo.txt
  ls,  list  [TERM] [[TERM]...]        Display todo's that contain TERM *
  lsn, listn [TERM] [[TERM]...]        Same as ls but with numeric sort
@@ -259,6 +259,9 @@ da,   doall NUMBER [NUMBER]...        Mark all items NUMBER as done
  s,   snippet [TERM...]               Display tasks completed last week
  c,   current [TERM...]               Display tasks completed this week
       sync                            Synchronize todo dir with svn
+ x,   context [TERM...]               Operate with context TERM
+ xa,  appendcontext [TERM...]         Append TERM onto current context
+ xr,  resetcontexts                   Clear all contexts
 
 Options:
  -p,  -nc       : Turns off colors
@@ -277,20 +280,21 @@ Options:
 
 def setDirs(dir):
     """Your todo/done/report.txt locations"""
-    global TODO_DIR, TODO_FILE, DONE_FILE, REPORT_FILE, TODO_BACKUP, DONE_BACKUP
-
+    global TODO_DIR, TODO_FILE, DONE_FILE, FILTER_FILE, REPORT_FILE, TODO_BACKUP, DONE_BACKUP
+    
     if os.environ.has_key("TODO_DIR"):
         dir = os.environ["TODO_DIR"]
     if os.name == 'nt':
         if not dir: dir = os.path.expanduser(r"~\My Documents")
     if not dir: dir = os.path.expanduser("~/todo")
-
+    
     if not os.path.isdir(dir):
         print "Can't open todo directory: %s" % dir
         sys.exit()
     TODO_DIR    = dir
     TODO_FILE   = dir + os.path.sep + "todo.txt"
     DONE_FILE   = dir + os.path.sep + "done.txt"
+    FILTER_FILE = dir + os.path.sep + "filter.txt"
     REPORT_FILE = dir + os.path.sep + "report.txt"
     TODO_BACKUP = dir + os.path.sep + "todo.bak"
     DONE_BACKUP = dir + os.path.sep + "done.bak"
@@ -299,7 +303,7 @@ def setDirs(dir):
 def setTheme(theme):
     """Set colors for use when printing text"""
     global PRI_A, PRI_B, PRI_C, PRI_X, DEFAULT
-
+    
     # Set the theme from BGCOL environment variable
     # only set if not set by cmdline flag
     if not theme and os.environ.has_key('BGCOL'):
@@ -307,10 +311,10 @@ def setTheme(theme):
             theme = 'light'
         elif os.environ['BGCOL'] == 'dark':
             theme = 'dark'
-
+    
     # If no theme from cmdline or environment then use default
     if not theme: theme = defaultTheme
-
+    
     if theme == "light":
         PRI_A = RED
         PRI_B = GREEN
@@ -356,23 +360,44 @@ def getDoneDict():
     """a utility method to obtain a dictionary of tasks from the DONE file"""
     return getDict(DONE_FILE)
 
-def writeTasks(taskDict):
+def getFilterDict():
+    """a utility method to obtain a dictionary of filters from the FILTER file"""
+    filters = {}
+    try:
+        filterre = re.compile("(\d+):(.*)")
+        for line in open(FILTER_FILE).readlines():
+            match = filterre.match(line)
+            filters[match.groups()[0]] = match.groups()[1].split()
+        return filters
+    except (IOError, os.error), why:
+        return {}
+
+def writeDict(dict, file, backup):
     """a utility method to write a dictionary of tasks to the TODO file"""
-    keys = taskDict.keys()
+    keys = dict.keys()
     keys.sort()
-    backup(TODO_FILE, TODO_BACKUP)
-    f = open(TODO_FILE, "w")
+    backup(file, backup)
+    f = open(file, "w")
     for key in keys:
-        f.write(taskDict[key] + os.linesep)
+        f.write(dict[key] + os.linesep)
     f.close()
+    
+def writeTasks(taskDict):
+    writeDict(taskDict, TODO_FILE, TODO_BACKUP)
 
 def writeDone(doneDict):
-    keys = doneDict.keys()
+    writeDict(doneDict, DONE_FILE, DONE_BACKUP)
+
+def writeFilters(filterDict):
+    keys = filterDict.keys()
     keys.sort()
-    backup(DONE_FILE, DONE_BACKUP)
-    f = open(DONE_FILE, "w")
+    f = open(FILTER_FILE, "w")
     for key in keys:
-        f.write(doneDict[key] + os.linesep)
+        if len(filterDict[key]) is 0: continue
+        filters = ""
+        for filter in filterDict[key]:
+            filters += " %s" % filter
+        f.write("%s: %s%s" % (key, filters, os.linesep))
     f.close()
 
 def add(text):
@@ -385,7 +410,7 @@ def add(text):
 
 def setPriority(text):
     """Handle priority if exisiting in supplied text"""
-
+    
     if singleLetterPriority:
         re_pri = re.compile(r"^[A-Z] ")
         if re.search(re_pri, text):
@@ -460,7 +485,7 @@ def backup(orig, backup):
 def do(items, comments=None):
     """Set status of all items in items list to DONE.
        Optional comments will be appended to the task line"""
-
+    
     tasks = getTaskDict()
     for item in items:
         item = int(item)
@@ -471,11 +496,11 @@ def do(items, comments=None):
         if isDone(tasks[item]): continue
         re_pri = re.compile(r"^\([A-Z]\) ")
         tasks[item] = re.sub(re_pri, "", tasks[item])
-
+        
         # add comment text if any
-        if comments: 
+        if comments:
             tasks[item] = addComment(tasks[item], comments)
-
+        
         date = time.strftime("%Y-%m-%d", time.localtime())
         print "Done %d: %s" % (item, tasks[item])
         tasks[item] = " ".join(["x", date, tasks[item]])
@@ -486,12 +511,12 @@ def addComment(text, comments):
     """Add a comment to the text of a task"""
     text = text + " # " + " ".join(comments)
     return text
- 
+
 def isDone(text):
     """Check if an item is a 'done' item"""
-    if text.startswith("x "): 
+    if text.startswith("x "):
         return True
-    else: 
+    else:
         return False
 
 
@@ -507,7 +532,7 @@ def done(item):
 def list(patterns=None, escape=True, \
         listDone=False, matchAny=False, dates=None, remove=False):
     """ List todo items.
-
+        
         patterns  - the pattern to search for in the TODO files.
         escape - switch, wether the pattern is provided by the
                     user and therefore has to be escaped.
@@ -521,7 +546,7 @@ def list(patterns=None, escape=True, \
     items = []
     temp = {}
     tasks = getTaskDict()
-
+    
     if listDone:
         # Add done dictionary to existing tasks
         done  = getDoneDict()
@@ -529,24 +554,29 @@ def list(patterns=None, escape=True, \
         for i in xrange(len(done)):
             new += 1
             tasks[new] = done[i+1]
-
-    if patterns: 
+    
+    if patterns is None:
+        patterns = getCurrentFilter()
+    else:
+        patterns.extend(getCurrentFilter())
+    
+    if patterns:
         tasks = findPatterns(tasks, patterns, escape=escape, matchAny=matchAny, remove=remove)
-
+    
     if dates: tasks = addDates(tasks, dates)
-
+    
     # Format gathered tasks
     for k,v in tasks.iteritems():
         items.append("%3d: %s" % (k, v))
-
+    
     # Print this before the tasks to make jabber bot pretty
     if verbose:
         print "todo.py: %d tasks in %s:" % ( len(items), TODO_FILE )
-
+    
     #items.sort() # sort by todo.txt order
     if (not numericSort):
         items.sort(alphaSort) # sort by tasks alphbetically
-
+    
     re_pri = re.compile(r".*(\([A-Z]\)).*")
     for item in items:
         if os.name == "nt":
@@ -570,7 +600,7 @@ def findPatterns(tasks, patterns, escape=True, matchAny=False, remove=False):
                 if (re.search(pattern, v, re.IGNORECASE)): match = True
             else:
                 if (not re.search(pattern, v, re.IGNORECASE)): match = False
-
+        
         if remove:
             # remove adds tasks if not matched
             if not match: temp[k] = v
@@ -599,7 +629,7 @@ def addDates(tasks, dates):
         match = False
         for date in dates:
             if (re.search(date, v, re.IGNORECASE)): match = True
-
+        
         if (match == True): temp[k] = v
     return temp
 
@@ -616,7 +646,7 @@ def listKeywords():
     items = []
     tasks = getTaskDict()
     numTasks = len(tasks)
-
+    
     # Add done dictionary to existing tasks
     # Can this be cone with zip() ?
     done  = getDoneDict()
@@ -624,10 +654,10 @@ def listKeywords():
     for i in xrange(len(done)):
         new += 1
         tasks[new] = done[i+1]
-
+    
     projects = {}
     contexts = {}
-
+    
     for k,v in tasks.iteritems():
         priority = hasPriority(v)
         words = v.split()
@@ -643,7 +673,7 @@ def listKeywords():
                 else:
                     projects[word]['ndone'] += 1
                     projects[word]['dlist'].append(k)
-
+            
             if word[0:1] == "@":
                 if not contexts.has_key(word):
                     contexts[word] = dict(ntask=0,ndone=0,tlist=[],dlist=[],priority=0)
@@ -659,22 +689,22 @@ def listKeywords():
 
 def displaySummary(dict, name, listDone, type):
     """text display of project and context names in simple or table format"""
-
+    
     if type == 'simple':
         for p in dict:
         # If not listDone only display those with entries in todo list
             if not dict[p]['ntask'] and not listDone: continue
             print p
-
+    
     elif type == 'table':
-
+        
         print "%4s %4s %4s %4s %-20s %s" % ("Todo", "Done", "%Done", "#Pri",
                 name, "[Todo task numbers]")
         tdone = 0
         ttodo = 0
         tword = 0
         tprio = 0
-
+        
         keys = dict.keys()
         keys.sort()
         for p in keys:
@@ -682,7 +712,7 @@ def displaySummary(dict, name, listDone, type):
             if not dict[p]['ntask'] and not listDone: continue
             wtotal = dict[p]['ntask'] + dict[p]['ndone']
             percentDone = float(dict[p]['ndone']) / wtotal * 100
-
+            
             #print "%4d %4d %4d %4d  %-20s" % (dict[p]['ntask'], dict[p]['ndone'],
                     #percentDone, dict[p]['priority'], p), dict[p]['tlist']
             row = "%4d %4d %4d %4d  %-20s " % (dict[p]['ntask'], dict[p]['ndone'],
@@ -701,7 +731,7 @@ def displaySummary(dict, name, listDone, type):
         totalPercent = 0
         if tdone and ttodo: totalPercent = tdone / (tdone + ttodo) * 100.0
         print "%4d %4d %4d %4d  %-20d Column Totals" % (ttodo, tdone, totalPercent, tprio, tword)
-
+    
     else:
         print "Please set the display type to simple or table"
 
@@ -721,7 +751,7 @@ def edit(file):
         editor = os.environ['EDITOR']
     elif os.name == 'posix':
         editor = "/etc/alternatives/editor"
-
+    
     if not waitEditor:
         try:
             from subprocess import Popen
@@ -767,10 +797,10 @@ def confirm():
 def report():
     """report open and closed tasks - airchive first"""
     archive()
-
+    
     active = getTaskDict()
     closed = getDoneDict()
-
+    
     date = time.strftime("%Y-%m-%d-%T", time.localtime())
     f = open(REPORT_FILE, 'a')
     string = "%s %d %d" % (date, len(active), len(closed))
@@ -834,9 +864,9 @@ def prioritize(item, newpriority):
     if (newpriority != "" and not re.match("[A-Z]", newpriority)):
         print "Priority not recognized: " + newpriority
         sys.exit(1)
-
+    
     re_pri = re.compile(r"\([A-Z]\) ")
-
+    
     if (newpriority == ""):
         # remove the existing priority
         tasks[item] = re.sub(re_pri, "", tasks[item])
@@ -844,7 +874,7 @@ def prioritize(item, newpriority):
         tasks[item] = re.sub(re_pri, "(" + newpriority + ") ", tasks[item])
     else:
         tasks[item] = "(" + newpriority + ") " + tasks[item]
-
+    
     writeTasks(tasks)
 
 def hasPriority(text):
@@ -887,6 +917,37 @@ def listCurrentSnippets():
         now -= 86400
     list(args, escape=False, listDone=True, matchAny=True, dates=when)
 
+def getCurrentFilter():
+    filters = getFilterDict()
+    console = "%d" % os.getppid()
+    
+    if console in filters:
+        return filters[console]
+    else:
+        return []
+    
+def setCurrentFilter(newFilters=None):
+    # replace existing filters with new filter
+    filters = getFilterDict()
+    console = "%d" % os.getppid()
+    
+    if newFilters is None:
+        newFilters = args
+
+    # delete any existing filter
+    filters[console] = newFilters
+    writeFilters(filters)
+
+def appendCurrentFilter():
+    # look up old filters, append new
+    newFilter = getCurrentFilter()
+    newFilter.extend(args)
+    
+    setCurrentFilter(newFilter)
+
+def resetFilters():
+    writeFilters({})
+
 def runSvn():
     currdir = os.getcwd()
     os.chdir(TODO_DIR)
@@ -898,7 +959,7 @@ def listItemNo(items):
     """List items by number"""
     tasks = getTaskDict()
     for item in items:
-        if not item.isdigit(): 
+        if not item.isdigit():
             print "Error: '%s' is not a valid task number" % item
             sys.exit()
         item = int(item)
@@ -915,14 +976,14 @@ if __name__ == "__main__":
     theme = None
     listDone = False
 
-
+    
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'fhpqvVint:d:', \
                 ['nc', 'help', 'version','theme=','todo-dir=', 'type='])
     except (getopt.GetoptError), why:
         print "Sorry - option not recognized.  Try -h for help"
         sys.exit()
-
+    
     for o, a in opts:
         if o == '-h':
             help()
@@ -958,7 +1019,7 @@ if __name__ == "__main__":
             theme = a
         if o in ('-p', '--nc'):
             theme = 'nocolor'
-
+    
     if (len(args) < 1):
         """ Default action - should probably be help """
         action = 'list'
@@ -1081,6 +1142,12 @@ if __name__ == "__main__":
         listSnippets()
     elif (action == "c" or action == "current"):
         listCurrentSnippets()
+    elif (action == "x" or action == "context"):
+        setCurrentFilter()
+    elif (action == "xa" or action == "appendcontext"):
+        appendCurrentFilter()
+    elif (action == "xr" or action == "resetcontexts"):
+        resetFilters()
     elif (action == "sync"):
         runSvn()
     elif (action in ["birdseye", "b", "bird", "summarize", "overview"]):

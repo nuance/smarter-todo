@@ -84,11 +84,9 @@ sub im_in {
 		if (($response eq "\n") || $response eq "") {
 			$response = $response."Nothing to display for command todo $message."
 		}
-	 } else {
-		$response = "You are not the boss of me.";
+		print "$screenname: $response\n";
+		$oscar->send_im($sender, $response);
 	 }
-	 print "$screenname:  $response\n";
-	 $oscar->send_im($sender, $response);
    
 }
 

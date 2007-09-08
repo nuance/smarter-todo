@@ -240,6 +240,7 @@ Usage: todo.py [options] [ACTION] [PARAM...]
  lsc, [all]contexts                   Display contexts in todo.txt *
  lsr, [all]projects                   Display projects in todo.txt *
  lsk, [all]keywords                   Display projects and contexts  *
+ lsd, [all]dates                      Displays items with due-dates *
  p,   pri NUMBER PRIORITY             Set PRIORITY on todo NUMBER
       do NUMBER [COMMENT]             Mark item NUMBER as done
       done "DONE p:project @context"  Add DONE to your done.txt
@@ -262,6 +263,7 @@ da,   doall NUMBER [NUMBER]...        Mark all items NUMBER as done
  x,   context [TERM...]               Operate with context TERM
  xa,  appendcontext [TERM...]         Append TERM onto current context
  xr,  resetcontexts                   Clear all contexts
+ xl,  listcontexts                    List current contexts
 
 Options:
  -p,  -nc       : Turns off colors
@@ -792,14 +794,14 @@ def confirm():
         if verbose: print "You said: '%s' - nothing changed." % answer
         sys.exit()
 
-def report():
+def report(date=None):
     """report open and closed tasks - airchive first"""
     archive()
     
     active = getTaskDict()
     closed = getDoneDict()
     
-    date = time.strftime("%Y-%m-%d-%T", time.localtime())
+    if date is None: date = time.strftime("%Y-%m-%d-%T", time.localtime())
     f = open(REPORT_FILE, 'a')
     string = "%s %d %d" % (date, len(active), len(closed))
     f.write(string + os.linesep)
@@ -886,6 +888,21 @@ def set_wincolor(color):
     stdhandle = ctypes.windll.kernel32.GetStdHandle(-11)
     bool = ctypes.windll.kernel32.SetConsoleTextAttribute(stdhandle, color)
     return bool
+    
+def listDueNextWeek():
+    now = time.time()
+    when = []
+    for day in xrange(7):
+        day = time.strftime("%d", time.localtime(now))
+        month = time.strftime("%m", time.localtime(now))
+        
+        if int(day) < 10:
+            when.append("%d/0%d" % (int(month), int(day)))
+        when.append("%d/%d" % (int(month), int(day)))
+        
+        now +=86400   
+    
+    list(args, escape=False, listDone=False, matchAny=True, dates=when)
 
 def listDays(days=1):
     now = time.time()
@@ -945,6 +962,14 @@ def appendCurrentFilter():
 
 def resetFilters():
     writeFilters({})
+
+def listFilters():
+    curr = getCurrentFilter()
+    filterstring = ""
+    for filter in curr:
+        filterstring += " %s" % filter
+        
+    print filterstring
 
 def runSvn():
     currdir = os.getcwd()
@@ -1111,6 +1136,15 @@ if __name__ == "__main__":
         else:
             x = ["\([A-Z]\)"]
         list(x, False)
+    elif (action == "lsd" or action == "lsdate" or action == "listdate"):
+        if (len(args) > 0):
+            pattern = re.escape(args[0])
+            x = ["d:" + pattern]
+        else:
+            x = ["d:[0-9\/]+"]
+        list(x, False)
+    elif (action == "nw" or action == "nextweek"):
+        listDueNextWeek()
     elif (action == "pri" or action == "p"):
         if (len(args) == 2 and args[0].isdigit() and args[1].isalpha()):
             prioritize(int(args[0]), args[1])
@@ -1146,6 +1180,8 @@ if __name__ == "__main__":
         appendCurrentFilter()
     elif (action == "xr" or action == "resetcontexts"):
         resetFilters()
+    elif (action == "xl" or action == "listcontexts"):
+        listFilters()
     elif (action == "sync"):
         runSvn()
     elif (action in ["birdseye", "b", "bird", "summarize", "overview"]):

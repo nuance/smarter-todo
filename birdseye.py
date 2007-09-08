@@ -197,7 +197,7 @@ def main(argv):
 
 	printTaskGroups("Projects with Open TODO's", projects, projectPriority, projectPercentages)
 	printTaskGroups("Contexts with Open TODO's", contexts, contextPriority, projectPercentages)
-	printTaskGroups("Completed Projects (No open TODO's)", projectsWithNoIncompletes, projectPriority, projectPercentages)
+#	printTaskGroups("Completed Projects (No open TODO's)", projectsWithNoIncompletes, projectPriority, projectPercentages)
 	print ""
 	print "* Projects and contexts with an asterisk next to them denote prioritized tasks."
 	print "Project with prioritized tasks are listed first, then sorted by number of open todo's."

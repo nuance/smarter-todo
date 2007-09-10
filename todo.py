@@ -532,7 +532,7 @@ def done(item):
     if not quiet: print "Done: %s" % item
 
 def list(patterns=None, escape=True, \
-        listDone=False, matchAny=False, dates=None, remove=False):
+        listDone=False, matchAny=False, dates=None, dateSort=False, remove=False):
     """ List todo items.
         
         patterns  - the pattern to search for in the TODO files.
@@ -574,8 +574,10 @@ def list(patterns=None, escape=True, \
         print "todo.py: %d tasks in %s:" % ( len(items), TODO_FILE )
     
     #items.sort() # sort by todo.txt order
-    if (not numericSort):
+    if (not numericSort and not dateSort):
         items.sort(alphaSort) # sort by tasks alphbetically
+    if dateSort:
+        items.sort(dateSortFn)
     
     re_pri = re.compile(r".*(\([A-Z]\)).*")
     for item in items:
@@ -831,6 +833,50 @@ def alphaSort(a, b):
         if (a[5:] > b[5:]): return 1
         elif (a[5:] < b[5:]): return -1
         else: return 0
+
+def dateSortFn(a, b):
+    """sorting function to sort tasks by due date"""
+    # find date via regex in a & b
+    # (date due) < (no date due)
+    
+    datere = re.compile("d:([0-9]{1,2})\/([0-9]{1,2})")
+    
+    amatch = datere.search(a)
+    bmatch = datere.search(b)
+    
+    if amatch is None and bmatch is None: return 0
+    if amatch is None: return -1
+    if bmatch is None: return 1
+
+    amonth, aday = int(amatch.group(1)), int(amatch.group(2))
+    bmonth, bday = int(bmatch.group(1)), int(bmatch.group(2))
+
+    astr = None
+    if amonth < 10:
+        astr = "0%d/" % amonth
+    else:
+        astr = "%d/" % amonth
+    if aday < 10:
+        astr += "0%d" % aday
+    else:
+        astr += "%d" % aday
+
+    bstr = ""
+    if bmonth < 10:
+        bstr = "0%d/" % bmonth
+    else:
+        bstr = "%d/" % bmonth
+    if bday < 10:
+        bstr += "0%d" % bday
+    else:
+        bstr += "%d" % bday
+
+    adate = time.strptime(astr, "%m/%d")
+    bdate = time.strptime(bstr, "%m/%d")
+
+    if adate > bdate: return -1
+    elif adate < bdate: return 1
+    else: return 0
 
 def highlightWindows(matchobj):
     """color replacement function used when highlighting priorities"""
@@ -1140,9 +1186,9 @@ if __name__ == "__main__":
         if (len(args) > 0):
             pattern = re.escape(args[0])
             x = ["d:" + pattern]
+            list(x, listDone=False, dateSort=True)
         else:
-            x = ["d:[0-9\/]+"]
-        list(x, False)
+            list(listDone=False, dateSort=True)
     elif (action == "nw" or action == "nextweek"):
         listDueNextWeek()
     elif (action == "pri" or action == "p"):

@@ -76,7 +76,7 @@ sub im_in {
 		}
 		
 		if ($message eq "tc") {
-		    $message = "ls \@class \@soda p:class p:e190 p:cs188 p:chem1a p:cs281a p:research"
+		    $message = "x \@class \@soda p:class p:e190 p:cs188 p:chem1a p:cs281a p:research";
 		}
 		
 		open FH, "$todoscript $message |" or $response = "The Todo bot go BOOM!  Please check the path to your todo script is correct.";

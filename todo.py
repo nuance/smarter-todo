@@ -1112,6 +1112,8 @@ if __name__ == "__main__":
             theme = 'nocolor'
     setTheme(theme)
 
+    action = action.lower()
+
 # Collected arguments - ready to process actions
     if (action == "add" or action == "a"):
         if (args): add(" ".join(args))

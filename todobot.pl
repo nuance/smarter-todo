@@ -16,7 +16,7 @@ use Net::OSCAR qw(:standard);
 my $screenname = 'roaringtodo';	# Your bot AIM nickname
 my $password   = 'fh45m9rw';   # Your bot AIM pasword
 my $commander  = 'roaringtofu';     # Your AIM name;  separate multiple commanders with comma no space
-my $todoscript = '/home/matt/todo-drop/todo.py -p';# Path to todo script with options
+my $todoscript = '/home/matt/todo-drop/todo.py -p -v';# Path to todo script with options
 my $linebreakchar = '<br />';	            # Defaults to HTML line breaks
 # =========END CONFIGURATION==============
 

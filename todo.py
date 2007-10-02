@@ -580,6 +580,7 @@ def list(patterns=None, escape=True, \
         items.sort(dateSortFn)
     
     re_pri = re.compile(r".*(\([A-Z]\)).*")
+    re_date = re.compile(".*d:([0-9]+)/([0-9]+).*")
     for item in items:
         if os.name == "nt":
             print re_pri.sub(highlightWindows, item)
@@ -587,7 +588,7 @@ def list(patterns=None, escape=True, \
         elif theme == 'nocolor':
             print item
         else:
-            print re_pri.sub(highlightPriority, item)
+            print re_date.sub(highlightDate, re_pri.sub(highlightPriority, item))
 
 def findPatterns(tasks, patterns, escape=True, matchAny=False, remove=False):
     """Return a task list based on a pattern - use remove for negate"""
@@ -901,6 +902,24 @@ def highlightPriority(matchobj):
     else:
         return PRI_X + matchobj.group(0) + DEFAULT
 
+def highlightDate(matchobj):
+  """color replacement function used when highlighting dates"""
+  
+  # build date object, compare to current month, date
+  month = int(matchobj.group(1))
+  date = int(matchobj.group(2))
+  
+  now = time.time()
+  nowdate = int(time.strftime("%d", time.localtime(now)))
+  nowmonth = int(time.strftime("%m", time.localtime(now)))
+  
+  if (nowmonth > month or (nowmonth == month and nowdate > date)):
+      return PRI_A + matchobj.group(0) + DEFAULT
+  elif (nowmonth == month and (nowdate == date or nowdate == date-1)):
+      return PRI_B + matchobj.group(0) + DEFAULT
+  else:
+      return PRI_X + matchobj.group(0) + DEFAULT
+
 def prioritize(item, newpriority):
     newpriority = newpriority.upper()
     tasks = getTaskDict()
@@ -934,7 +953,7 @@ def set_wincolor(color):
     stdhandle = ctypes.windll.kernel32.GetStdHandle(-11)
     bool = ctypes.windll.kernel32.SetConsoleTextAttribute(stdhandle, color)
     return bool
-    
+
 def listDueNextWeek():
     now = time.time()
     when = []

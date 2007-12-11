@@ -902,6 +902,18 @@ def highlightPriority(matchobj):
     else:
         return PRI_X + matchobj.group(0) + DEFAULT
 
+
+def daysInMonth(month):
+  if month in [1, 3, 5, 7, 8, 10, 12]: return 31
+  if month == 2: return 28
+  if month in [4, 6, 9, 11]: return 30
+
+def daysAway(dayA, monthA, dayB, monthB):
+  daysA = sum([daysInMonth(m) for m in xrange(1,monthA)]) + dayA
+  daysB = sum([daysInMonth(m) for m in xrange(1,monthB)]) + dayB
+
+  return daysB - daysA
+
 def highlightDate(matchobj):
   """color replacement function used when highlighting dates"""
   
@@ -913,10 +925,14 @@ def highlightDate(matchobj):
   nowdate = int(time.strftime("%d", time.localtime(now)))
   nowmonth = int(time.strftime("%m", time.localtime(now)))
   
-  if (nowmonth > month or (nowmonth == month and nowdate > date)):
+  away = daysAway(nowdate, nowmonth, date, month)
+  
+  if away <= 0:
       return PRI_A + matchobj.group(0) + DEFAULT
-  elif (nowmonth == month and (nowdate == date or nowdate == date-1)):
+  elif away <= 2:
       return PRI_B + matchobj.group(0) + DEFAULT
+  elif away <= 7:
+      return PRI_C + matchobj.group(0) + DEFAULT
   else:
       return PRI_X + matchobj.group(0) + DEFAULT
 
@@ -954,10 +970,10 @@ def set_wincolor(color):
     bool = ctypes.windll.kernel32.SetConsoleTextAttribute(stdhandle, color)
     return bool
 
-def listDueNextWeek():
+def listDueDays(days=1):
     now = time.time()
     when = []
-    for day in xrange(7):
+    for day in xrange(days):
         day = time.strftime("%d", time.localtime(now))
         month = time.strftime("%m", time.localtime(now))
         
@@ -1211,7 +1227,9 @@ if __name__ == "__main__":
         else:
             list(listDone=False, dateSort=True)
     elif (action == "nw" or action == "nextweek"):
-        listDueNextWeek()
+        listDueDays(7)
+    elif (action == "nd" or action == "nextday"):
+        listDueDays(2)
     elif (action == "pri" or action == "p"):
         if (len(args) == 2 and args[0].isdigit() and args[1].isalpha()):
             prioritize(int(args[0]), args[1])

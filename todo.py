@@ -575,7 +575,7 @@ def list(patterns=None, escape=True, \
     
     #items.sort() # sort by todo.txt order
     if (not numericSort and not dateSort):
-        items.sort(alphaSort) # sort by tasks alphbetically
+        items.sort(alphaSort) # sort by tasks alphabetically
     if dateSort:
         items.sort(dateSortFn)
     
@@ -914,16 +914,27 @@ def daysAway(dayA, monthA, dayB, monthB):
 
   return daysB - daysA
 
+def oldDate(string):
+  olddatere = re.compile("x (?P<year>[0-9]{4})-(?P<month>[0-9]{2})-(?P<date>[0-9]{2})")
+  match = olddatere.search(string)
+  if match:
+    return [int(x) for x in (match.group("date"), match.group("month"), match.group("year"))]
+  else:
+    return (False, False, False)
+
 def highlightDate(matchobj):
   """color replacement function used when highlighting dates"""
-  
+
+  (nowdate,nowmonth,nowyear) = oldDate(matchobj.group(0))
+  if not nowdate: 
+    now = time.time()
+    nowdate = int(time.strftime("%d", time.localtime(now)))
+    nowmonth = int(time.strftime("%m", time.localtime(now)))
+    nowyear = int(time.strftime("%Y", time.localtime(now)))
+
   # build date object, compare to current month, date
   month = int(matchobj.group(1))
   date = int(matchobj.group(2))
-  
-  now = time.time()
-  nowdate = int(time.strftime("%d", time.localtime(now)))
-  nowmonth = int(time.strftime("%m", time.localtime(now)))
   
   away = daysAway(nowdate, nowmonth, date, month)
   

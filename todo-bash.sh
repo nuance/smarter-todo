@@ -12,7 +12,7 @@ function tw {
 
 function tc {
 		CURRENT=`$DROP/todo.py xl`
-    $DROP/todo.py xa @class @soda p:class p:e190 p:cs188 p:chem1a p:cs281a p:research
+    $DROP/todo.py xa @class @soda @cory p:class p:nlp p:pml p:espm p:cs194 p:research
     $DROP/todo.py $*
     $DROP/todo.py x
 		$DROP/todo.py x $CURRENT

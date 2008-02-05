@@ -573,6 +573,20 @@ def list(patterns=None, escape=True, \
     if verbose:
         print "todo.py: %d tasks in %s:" % ( len(items), TODO_FILE )
     
+    longterm = True
+    # Print long-term goals
+    if longterm:
+        longtermre = re.compile("p:resolution")
+        print "## Long Term Goals ##"
+
+        taskDict = getTaskDict()
+        longTermTasks = []
+
+        for task in taskDict.values(): 
+          if longtermre.search(task): print "     %s" % task
+
+        print "## Short Term Goals ##"
+    
     #items.sort() # sort by todo.txt order
     if (not numericSort and not dateSort):
         items.sort(alphaSort) # sort by tasks alphabetically

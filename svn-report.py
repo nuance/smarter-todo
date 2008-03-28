@@ -51,8 +51,8 @@ if __name__ == "__main__":
     # find the current revision
     head = findCurrentRevision()
     
-    todo.setDirs("/Users/matt/todo/")
-    todo.REPORT_FILE = "/Users/matt/todo/report-generated.txt"
+    todo.setDirs("/Users/matt/todo-drop/todo-report-log/")
+    todo.REPORT_FILE = "/Users/matt/todo-drop/todo-report-log/report-generated.txt"
     
     # start at revision 0, work your way up
     for revision in xrange(239, head):

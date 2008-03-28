@@ -812,7 +812,7 @@ def confirm():
         sys.exit()
 
 def report(date=None):
-    """report open and closed tasks - airchive first"""
+    """report open and closed tasks - archive first"""
     archive()
     
     active = getTaskDict()

@@ -532,7 +532,7 @@ def done(item):
     if not quiet: print "Done: %s" % item
 
 def list(patterns=None, escape=True, \
-        listDone=False, matchAny=False, dates=None, dateSort=False, remove=False):
+        listDone=False, matchAny=False, dates=None, dateSort=False, remove=False, longterm=True):
     """ List todo items.
         
         patterns  - the pattern to search for in the TODO files.
@@ -573,10 +573,9 @@ def list(patterns=None, escape=True, \
     if verbose:
         print "todo.py: %d tasks in %s:" % ( len(items), TODO_FILE )
     
-    longterm = True
+    longtermre = re.compile("p:resolution")
     # Print long-term goals
     if longterm:
-        longtermre = re.compile("p:resolution")
         print "## Long Term Goals ##"
 
         taskDict = getTaskDict()
@@ -596,6 +595,7 @@ def list(patterns=None, escape=True, \
     re_pri = re.compile(r".*(\([A-Z]\)).*")
     re_date = re.compile(".*d:([0-9]+)/([0-9]+).*")
     for item in items:
+        if longterm and longtermre.search(item): continue
         if os.name == "nt":
             print re_pri.sub(highlightWindows, item)
             set_wincolor(DEFAULT)
@@ -1008,7 +1008,7 @@ def listDueDays(days=1):
         
         now +=86400   
     
-    list(args, escape=False, listDone=False, matchAny=True, dates=when)
+    list(args, escape=False, listDone=False, matchAny=True, dates=when, longterm=False)
 
 def listDays(days=1):
     now = time.time()
@@ -1255,6 +1255,8 @@ if __name__ == "__main__":
         listDueDays(7)
     elif (action == "nd" or action == "nextday"):
         listDueDays(2)
+    elif (action == "lst" or action == "today"):
+        listDueDays(1)
     elif (action == "pri" or action == "p"):
         if (len(args) == 2 and args[0].isdigit() and args[1].isalpha()):
             prioritize(int(args[0]), args[1])

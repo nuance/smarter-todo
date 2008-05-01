@@ -532,7 +532,7 @@ def done(item):
     if not quiet: print "Done: %s" % item
 
 def list(patterns=None, escape=True, \
-        listDone=False, matchAny=False, dates=None, dateSort=False, remove=False, longterm=True):
+        listDone=False, matchAny=False, startDate=None, endDate=None, dates=None, dateSort=False, remove=False, longterm=True):
     """ List todo items.
         
         patterns  - the pattern to search for in the TODO files.
@@ -563,6 +563,7 @@ def list(patterns=None, escape=True, \
     if patterns:
         tasks = findPatterns(tasks, patterns, escape=escape, matchAny=matchAny, remove=remove)
     
+    if startDate or endDate: tasks = filterByDateRange(tasks, startDate, endDate)
     if dates: tasks = addDates(tasks, dates)
     
     # Format gathered tasks
@@ -638,6 +639,38 @@ def hideInclude(tasks):
     """Remove #INCLUDE statements from task list"""
     patterns = ['#INCLUDE']
     return removePatterns(tasks, patterns, escape=False)
+
+def filterByDateRange(tasks, startDate=None, endDate=None):
+    """Match tasks with date between startDate and endDate"""
+
+    if not (startDate or endDate): return tasks
+
+    datere = re.compile("d:(?P<month>\d+)/(?P<day>\d+)")
+
+    start = None
+    try:
+      if startDate: start = time.strptime(startDate, "%m/%d")
+    except ValueError: 
+      pass
+
+    end = None
+    try:
+      if endDate: end = time.strptime(endDate, "%m/%d")
+    except ValueError:
+      pass
+
+    matches = {}
+    for k,v in tasks.iteritems():
+        match = datere.search(v)
+        if not match: continue
+        try:
+          date = time.strptime("%s,%s" % (match.group("month"), match.group("day")), "%m,%d")
+        except ValueError: continue
+        if start and start > date: continue
+        if end and end < date: continue
+        matches[k] = v
+
+    return matches
 
 def addDates(tasks, dates):
     """Match tasks with a dates in a date list"""
@@ -995,20 +1028,16 @@ def set_wincolor(color):
     bool = ctypes.windll.kernel32.SetConsoleTextAttribute(stdhandle, color)
     return bool
 
+# returns anything due before (days) away
 def listDueDays(days=1):
-    now = time.time()
-    when = []
-    for day in xrange(days):
-        day = time.strftime("%d", time.localtime(now))
-        month = time.strftime("%m", time.localtime(now))
-        
-        if int(day) < 10:
-            when.append("%d/0%d" % (int(month), int(day)))
-        when.append("%d/%d" % (int(month), int(day)))
-        
-        now +=86400   
+    now = time.time() + 86400*days
+
+    day = int(time.strftime("%d", time.localtime(now)))
+    month = int(time.strftime("%m", time.localtime(now)))
     
-    list(args, escape=False, listDone=False, matchAny=True, dates=when, longterm=False)
+    when = "%d/%d" % (month,day)
+    
+    list(args, escape=False, listDone=False, matchAny=True, endDate=when, dateSort=True, longterm=False)
 
 def listDays(days=1):
     now = time.time()
@@ -1016,7 +1045,7 @@ def listDays(days=1):
     for day in xrange(days):
         when.append(time.strftime("%Y-%m-%d", time.localtime(now)))
         now -= 86400
-    list(args, escape=False, listDone=True, matchAny=True, dates=when)
+    list(args, escape=False, listDone=True, matchAny=True, dates=when, dateSort=True)
 
 def listSnippets():
     now = time.time()
@@ -1255,7 +1284,7 @@ if __name__ == "__main__":
         listDueDays(7)
     elif (action == "nd" or action == "nextday"):
         listDueDays(2)
-    elif (action == "lst" or action == "today"):
+    elif (action == "lst" or action == "duetoday"):
         listDueDays(1)
     elif (action == "pri" or action == "p"):
         if (len(args) == 2 and args[0].isdigit() and args[1].isalpha()):

@@ -3,6 +3,7 @@
 TODO.TXT Manager - Python Version
 Author          : Shane Koster <shane.koster@gmail.com>
 Modified by     : Graham Davies <grahamdaviez@gmail.com>
+Modified by     : Matt Jones <matt-lists@mhjones.org>
 Concept by      : Gina Trapani (ginatrapani@gmail.com
 License         : GPL, http://www.gnu.org/copyleft/gpl.html
 More info       : http://todotxt.com
@@ -11,9 +12,9 @@ Direct link     : http://todotxt.googlecode.com/svn/trunk/todo.py
 Project todo.txt: http://todotxt.googlecode.com/svn/trunk/todo.txt
 """
 
-__version__   = "1.8.1-py-beta"
-__revision__  = "$Revision: 176 $"
-__date__      = "2006/07/29"
+__version__   = "1.9.0"
+__revision__  = "$Revision: 955 $"
+__date__      = "2008/04/30"
 __author__    = "Shane Koster (shane.koster@gmail.com)"
 __copyright__ = "Copyright 2006, Gina Trapani"
 __license__   = "GPL"

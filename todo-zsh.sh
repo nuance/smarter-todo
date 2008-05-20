@@ -26,4 +26,18 @@ tomorrow () {
     $DROP/todo.py nd $*
 }
 
+((PRECMD_COUNTER=0))
+
+todoprecmd () { 
+    if ((PRECMD_COUNTER == 0)); then 
+	if ((`date +"%s"` - `stat -f "%c" ~/.todo-plan` > 3600)); then
+	    today > ~/.todo-plan
+	fi
+	cat ~/.todo-plan
+
+	((PRECMD_COUNTER=5))
+    fi
+    ((PRECMD_COUNTER--))
+}
+
 alias b="$DROP/todo.py b"
